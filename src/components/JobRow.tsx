@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TableCell, TableRow } from "@/components/ui/table"
 import type { JobListEntry } from "@/types"
+import { useSettings } from "@/lib/i18n"
 import {
   Play,
   Square,
@@ -20,18 +21,21 @@ import {
   Zap,
 } from "lucide-react"
 
-function formatRelativeTime(epochMillis: string): string {
+function formatRelativeTime(
+  epochMillis: string,
+  t: ReturnType<typeof useSettings>["t"]
+): string {
   const ms = Number(epochMillis)
   if (isNaN(ms)) return "—"
   const diff = Date.now() - ms
   const seconds = Math.floor(diff / 1000)
-  if (seconds < 60) return "just now"
+  if (seconds < 60) return t("justNow")
   const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
+  if (minutes < 60) return `${minutes}${t("minuteAgo")}`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours}${t("hourAgo")}`
   const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
+  if (days < 30) return `${days}${t("dayAgo")}`
   const date = new Date(ms)
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
@@ -48,40 +52,44 @@ type JobRowProps = {
 }
 
 function StatusBadge({ status }: { status: JobListEntry["status"] }) {
+  const { statusLabel } = useSettings()
+
   switch (status) {
     case "Running":
       return (
         <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
-          Running
+          {statusLabel(status)}
         </Badge>
       )
     case "Loaded":
       return (
         <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">
-          Loaded
+          {statusLabel(status)}
         </Badge>
       )
     case "Unloaded":
-      return <Badge variant="secondary">Unloaded</Badge>
+      return <Badge variant="secondary">{statusLabel(status)}</Badge>
     default:
-      return <Badge variant="outline">Unknown</Badge>
+      return <Badge variant="outline">{statusLabel(status)}</Badge>
   }
 }
 
 function SourceBadge({ source }: { source: JobListEntry["source"] }) {
+  const { sourceLabel } = useSettings()
+
   switch (source) {
     case "UserAgent":
-      return <Badge variant="outline">User</Badge>
+      return <Badge variant="outline">{sourceLabel(source)}</Badge>
     case "SystemAgent":
       return (
         <Badge variant="outline" className="border-blue-300 text-blue-700">
-          System
+          {sourceLabel(source)}
         </Badge>
       )
     case "SystemDaemon":
       return (
         <Badge variant="outline" className="border-purple-300 text-purple-700">
-          Daemon
+          {sourceLabel(source)}
         </Badge>
       )
   }
@@ -97,6 +105,7 @@ export function JobRow({
   onSelect,
   onRevealInFinder,
 }: JobRowProps) {
+  const { t } = useSettings()
   const isUserAgent = job.source === "UserAgent"
 
   return (
@@ -115,7 +124,7 @@ export function JobRow({
         {job.pid ?? "—"}
       </TableCell>
       <TableCell className="text-muted-foreground text-xs tabular-nums">
-        {job.last_run_at ? formatRelativeTime(job.last_run_at) : "—"}
+        {job.last_run_at ? formatRelativeTime(job.last_run_at, t) : "—"}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -126,7 +135,7 @@ export function JobRow({
               className="h-8 w-8"
               onClick={() => onStop(job)}
               disabled={!isUserAgent}
-              title={isUserAgent ? "Stop" : "Cannot stop system agents"}
+              title={isUserAgent ? t("stop") : t("cannotStopSystemAgents")}
             >
               <Square className="h-4 w-4" />
             </Button>
@@ -137,7 +146,7 @@ export function JobRow({
               className="h-8 w-8"
               onClick={() => onStop(job)}
               disabled={!isUserAgent}
-              title={isUserAgent ? "Unload" : "Cannot unload system agents"}
+              title={isUserAgent ? t("unload") : t("cannotUnloadSystemAgents")}
             >
               <Square className="h-4 w-4" />
             </Button>
@@ -148,7 +157,7 @@ export function JobRow({
               className="h-8 w-8"
               onClick={() => onStart(job)}
               disabled={!isUserAgent}
-              title={isUserAgent ? "Load" : "Cannot load system agents"}
+              title={isUserAgent ? t("load") : t("cannotLoadSystemAgents")}
             >
               <Play className="h-4 w-4" />
             </Button>
@@ -160,7 +169,7 @@ export function JobRow({
               className="h-8 w-8"
               onClick={() => onRestart(job)}
               disabled={!isUserAgent}
-              title={isUserAgent ? "Restart" : "Cannot restart system agents"}
+              title={isUserAgent ? t("restart") : t("cannotRestartSystemAgents")}
             >
               <RotateCw className="h-4 w-4" />
             </Button>
@@ -174,15 +183,15 @@ export function JobRow({
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onKickstart(job)}>
                 <Zap className="mr-2 h-4 w-4" />
-                Test Run
+                {t("testRun")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onSelect(job)}>
                 <FileText className="mr-2 h-4 w-4" />
-                Details
+                {t("details")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onRevealInFinder(job)}>
                 <FolderOpen className="mr-2 h-4 w-4" />
-                Reveal in Finder
+                {t("revealInFinder")}
               </DropdownMenuItem>
               {isUserAgent && (
                 <>
@@ -192,7 +201,7 @@ export function JobRow({
                     onClick={() => onDelete(job)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                    {t("delete")}
                   </DropdownMenuItem>
                 </>
               )}

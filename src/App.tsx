@@ -4,7 +4,9 @@ import { SearchBar } from "@/components/SearchBar"
 import { JobList } from "@/components/JobList"
 import { JobDetail } from "@/components/JobDetail"
 import { JobForm } from "@/components/JobForm"
+import { SettingsDialog } from "@/components/SettingsDialog"
 import { useJobs } from "@/hooks/useJobs"
+import { useSettings } from "@/lib/i18n"
 import {
   startJob,
   stopJob,
@@ -23,9 +25,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { Plus, RefreshCw } from "lucide-react"
+import { Plus, RefreshCw, Settings } from "lucide-react"
 
 function App() {
+  const { t } = useSettings()
   const {
     filteredJobs,
     loading,
@@ -34,6 +37,10 @@ function App() {
     setSearch,
     sourceFilter,
     setSourceFilter,
+    statusFilter,
+    setStatusFilter,
+    pidFilter,
+    setPidFilter,
     refresh,
   } = useJobs()
 
@@ -44,6 +51,7 @@ function App() {
   const [editingJob, setEditingJob] = useState<LaunchdJob | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<JobListEntry | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleAction = useCallback(
     async (action: () => Promise<void>) => {
@@ -94,11 +102,20 @@ function App() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">launchd-ui</h1>
+          <h1 className="text-lg font-semibold">iLaunchboard</h1>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={refresh}>
               <RefreshCw className="h-4 w-4 mr-1" />
-              Refresh
+              {t("refresh")}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setSettingsOpen(true)}
+              aria-label={t("settings")}
+              title={t("settings")}
+            >
+              <Settings className="h-4 w-4" />
             </Button>
             <Button
               size="sm"
@@ -109,7 +126,7 @@ function App() {
               }}
             >
               <Plus className="h-4 w-4 mr-1" />
-              New Agent
+              {t("newAgent")}
             </Button>
           </div>
         </div>
@@ -121,6 +138,10 @@ function App() {
           onSearchChange={setSearch}
           sourceFilter={sourceFilter}
           onSourceFilterChange={setSourceFilter}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          pidFilter={pidFilter}
+          onPidFilterChange={setPidFilter}
         />
 
         {error && (
@@ -168,27 +189,29 @@ function App() {
         editingJob={editingJob}
       />
 
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+
       <Dialog
         open={!!deleteTarget}
         onOpenChange={(isOpen) => !isOpen && setDeleteTarget(null)}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Agent</DialogTitle>
+            <DialogTitle>{t("deleteAgent")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete{" "}
+            {t("deleteAgentConfirm")}{" "}
             <span className="font-mono font-medium text-foreground">
               {deleteTarget?.label}
             </span>
-            ? This will stop the agent and remove its plist file.
+            {t("deleteAgentSuffix")}
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Delete
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

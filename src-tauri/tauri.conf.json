@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "launchd-ui",
+  "productName": "iLaunchboard",
   "version": "1.2.0",
-  "identifier": "com.github.azu.launchd-ui",
+  "identifier": "com.fred.ilaunchboard",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "launchd-ui",
+        "title": "iLaunchboard",
         "width": 1000,
         "height": 700,
         "resizable": true,

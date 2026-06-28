@@ -1,6 +1,13 @@
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import type { JobSource } from "@/types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { JobSource, JobStatus } from "@/types"
+import { useSettings, type TranslationKey } from "@/lib/i18n"
 import { Search } from "lucide-react"
 
 type SearchBarProps = {
@@ -8,13 +15,25 @@ type SearchBarProps = {
   onSearchChange: (value: string) => void
   sourceFilter: JobSource | "All"
   onSourceFilterChange: (value: JobSource | "All") => void
+  statusFilter: JobStatus | "All"
+  onStatusFilterChange: (value: JobStatus | "All") => void
+  pidFilter: string
+  onPidFilterChange: (value: string) => void
 }
 
-const sourceOptions: Array<{ value: JobSource | "All"; label: string }> = [
-  { value: "All", label: "All" },
-  { value: "UserAgent", label: "User" },
-  { value: "SystemAgent", label: "System" },
-  { value: "SystemDaemon", label: "Daemon" },
+const sourceOptions: Array<{ value: JobSource | "All"; label: TranslationKey }> = [
+  { value: "All", label: "allSources" },
+  { value: "UserAgent", label: "user" },
+  { value: "SystemAgent", label: "systemAgent" },
+  { value: "SystemDaemon", label: "daemon" },
+]
+
+const statusOptions: Array<{ value: JobStatus | "All"; label: TranslationKey }> = [
+  { value: "All", label: "allStatuses" },
+  { value: "Running", label: "running" },
+  { value: "Loaded", label: "loaded" },
+  { value: "Unloaded", label: "unloaded" },
+  { value: "Unknown", label: "unknown" },
 ]
 
 export function SearchBar({
@@ -22,30 +41,56 @@ export function SearchBar({
   onSearchChange,
   sourceFilter,
   onSourceFilterChange,
+  statusFilter,
+  onStatusFilterChange,
+  pidFilter,
+  onPidFilterChange,
 }: SearchBarProps) {
+  const { t } = useSettings()
+
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative flex-1 max-w-sm">
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="relative min-w-56 flex-1 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search agents..."
+          placeholder={t("filterLabel")}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
         />
       </div>
-      <div className="flex items-center gap-1">
-        {sourceOptions.map((option) => (
-          <Button
-            key={option.value}
-            variant={sourceFilter === option.value ? "default" : "outline"}
-            size="sm"
-            onClick={() => onSourceFilterChange(option.value)}
-          >
-            {option.label}
-          </Button>
-        ))}
-      </div>
+      <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
+        <SelectTrigger className="w-36" size="sm" aria-label={t("filterSource")}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {sourceOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {t(option.label)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+        <SelectTrigger className="w-36" size="sm" aria-label={t("filterStatus")}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {statusOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {t(option.label)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Input
+        inputMode="numeric"
+        placeholder={t("filterPid")}
+        value={pidFilter}
+        onChange={(e) => onPidFilterChange(e.target.value)}
+        className="w-32"
+        aria-label={t("filterPid")}
+      />
     </div>
   )
 }

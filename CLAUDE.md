@@ -1,6 +1,6 @@
-# launchd-ui
+# iLaunchboard
 
-macOS launchd エージェント/デーモン管理GUI（Tauri v2）
+macOS launchd agent/daemon management GUI (Tauri v2)
 
 ## Tech Stack
 

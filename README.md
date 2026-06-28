@@ -1,74 +1,61 @@
-# launchd-ui
+# iLaunchboard
 
-A GUI application for managing macOS launchd agents and daemons. Built with Tauri v2.
+A visual macOS app for managing `launchd` agents and daemons. Built with Tauri v2.
 
-Browse user LaunchAgents (`~/Library/LaunchAgents/`) and system agents/daemons. Start, stop, restart, view/edit plist files, and create new agents.
+iLaunchboard helps you browse user LaunchAgents (`~/Library/LaunchAgents/`), system agents, and system daemons. You can start, stop, restart, inspect, edit, and create user agents from a desktop UI.
 
-![screenshot](screenshot.jpg)
+![iLaunchboard screenshot](assets/print.png)
 
 ## Features
 
-- List User Agents (`~/Library/LaunchAgents/`), System Agents, and System Daemons
-- Search by label and filter by source (User / System / Daemon)
-- Start / Stop / Restart / Test Run (immediate execution) for User Agents
-- Create new agents, edit and delete existing ones
-- Schedule configuration (interval / calendar) with next run time preview
-- View stdout / stderr logs
+- List User Agents, System Agents, and System Daemons
+- Search and filter by label, source, status, and PID
+- Sort table columns
+- Start / Stop / Restart / Test Run for User Agents
+- Create new agents, edit and delete existing user agents
+- Schedule configuration with interval/calendar previews
+- View stdout/stderr logs
 - Inspect plist configuration details
-- Reveal plist file in Finder
+- Reveal plist files in Finder
+- Light, dark, and system theme modes
+- English and Portuguese UI
 
 System Agents and Daemons are read-only. Modification operations are limited to User Agents.
-
-## Install
-
-This app is not code-signed. Download and install via CLI:
-
-```bash
-# Download and extract (Apple Silicon)
-curl -L "https://github.com/azu/launchd-ui/releases/latest/download/launchd-ui_aarch64.app.tar.gz" | tar xz -C /Applications
-# Remove quarantine attribute (required for unsigned apps)
-xattr -cr /Applications/launchd-ui.app
-```
-
-For Intel Macs, replace `aarch64` with `x64`.
-
-DMG installers are also available on the [Releases](https://github.com/azu/launchd-ui/releases) page.
-
-## Tech Stack
-
-- Tauri v2 (Rust backend) + React + TypeScript + Vite
-- UI: Tailwind CSS v4 + shadcn/ui
-- Lint: oxlint (TypeScript), cargo clippy + rustfmt (Rust)
-- Test: vitest (Frontend), cargo test (Rust)
-- Package manager: pnpm
 
 ## Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Dev mode (launches app with hot reload)
 pnpm tauri:dev
+```
 
-# Frontend only
+Frontend only:
+
+```bash
 pnpm dev
+```
 
-# Production build (DMG)
+Production build:
+
+```bash
 pnpm tauri:build
 ```
 
 ## Testing / Lint
 
 ```bash
-pnpm test          # vitest (frontend)
-pnpm lint          # oxlint
-pnpm typecheck     # TypeScript type check
+pnpm test
+pnpm lint
+pnpm typecheck
 
-cargo test --manifest-path src-tauri/Cargo.toml          # Rust tests
-cargo fmt --manifest-path src-tauri/Cargo.toml --check   # Rust format check
-cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings  # Rust lint
+cargo test --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 ```
+
+## Origin
+
+This project is based on [azu/launchd-ui](https://github.com/azu/launchd-ui), originally published under the MIT License.
 
 ## License
 

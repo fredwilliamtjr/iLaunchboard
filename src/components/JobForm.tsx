@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import type { PlistConfig, LaunchdJob, CalendarInterval } from "@/types"
 import { getHomeDir } from "@/lib/invoke"
+import { useSettings } from "@/lib/i18n"
 import {
   detectHourRange,
   expandHourRange,
@@ -105,9 +106,17 @@ function detectHourMode(config: PlistConfig): HourMode {
   return "specific"
 }
 
-const weekdayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
 export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
+  const { t } = useSettings()
+  const weekdayLabels = [
+    t("sunday"),
+    t("monday"),
+    t("tuesday"),
+    t("wednesday"),
+    t("thursday"),
+    t("friday"),
+    t("saturday"),
+  ]
   const [config, setConfig] = useState<PlistConfig>(
     editingJob?.plist ?? emptyConfig()
   )
@@ -153,11 +162,11 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
   const handleSave = async () => {
     setError(null)
     if (!config.label.trim()) {
-      setError("Label is required")
+      setError(t("labelRequired"))
       return
     }
     if (scheduleType === "calendar" && hourMode === "range" && hourRange.from > hourRange.to) {
-      setError("Hour range 'from' must be less than or equal to 'to'")
+      setError(t("hourRangeInvalid"))
       return
     }
 
@@ -194,14 +203,14 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
       <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Edit Agent" : "New Agent"}
+            {isEditing ? t("editAgent") : t("newAgent")}
           </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-1.5">
             <Label htmlFor="label">
-              Label <span className="text-destructive">*</span>
+              {t("label")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="label"
@@ -211,7 +220,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                 const label = e.target.value.replace(/\s/g, "")
                 const updates: Partial<PlistConfig> = { label }
                 if (!isEditing && homeDir && label.trim()) {
-                  const logDir = `${homeDir}/Library/Logs/launchd-ui`
+                  const logDir = `${homeDir}/Library/Logs/iLaunchboard`
                   updates.standard_out_path = `${logDir}/${label}.stdout.log`
                   updates.standard_error_path = `${logDir}/${label}.stderr.log`
                 }
@@ -222,13 +231,13 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               autoCorrect="off"
             />
             <p className="text-xs text-muted-foreground">
-              Unique identifier for this agent. Use reverse domain notation (e.g. com.yourname.task).
+              {t("uniqueIdentifierHelp")}
             </p>
           </div>
 
           <div className="grid gap-1.5">
             <Label htmlFor="args">
-              Program Arguments <span className="text-destructive">*</span>
+              {t("programArguments")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="args"
@@ -239,13 +248,13 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               autoCorrect="off"
             />
             <p className="text-xs text-muted-foreground">
-              The command to execute, followed by its arguments. Space-separated. Use quotes for arguments containing spaces (e.g. /usr/bin/cmd "arg with spaces").
+              {t("programArgumentsHelp")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-1.5">
-              <Label htmlFor="run-at-load">Run at Load</Label>
+              <Label htmlFor="run-at-load">{t("runAtLoad")}</Label>
               <Select
                 value={config.run_at_load ? "true" : "false"}
                 onValueChange={(v) =>
@@ -256,17 +265,17 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
+                  <SelectItem value="true">{t("yes")}</SelectItem>
+                  <SelectItem value="false">{t("no")}</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Start automatically when loaded by launchd.
+                {t("runAtLoadHelp")}
               </p>
             </div>
 
             <div className="grid gap-1.5">
-              <Label htmlFor="keep-alive">Keep Alive</Label>
+              <Label htmlFor="keep-alive">{t("keepAlive")}</Label>
               <Select
                 value={config.keep_alive ? "true" : "false"}
                 onValueChange={(v) =>
@@ -277,19 +286,19 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
+                  <SelectItem value="true">{t("yes")}</SelectItem>
+                  <SelectItem value="false">{t("no")}</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Restart automatically if the process exits.
+                {t("keepAliveHelp")}
               </p>
             </div>
           </div>
 
           <div className="grid gap-1.5">
             <Label>
-              Schedule <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+              {t("schedule")} <span className="text-xs font-normal text-muted-foreground">({t("optional")})</span>
             </Label>
             <Select
               value={scheduleType}
@@ -299,19 +308,19 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No schedule</SelectItem>
-                <SelectItem value="interval">Run every N seconds</SelectItem>
-                <SelectItem value="calendar">Run at specific time</SelectItem>
+                <SelectItem value="none">{t("noSchedule")}</SelectItem>
+                <SelectItem value="interval">{t("runEverySeconds")}</SelectItem>
+                <SelectItem value="calendar">{t("runAtSpecificTime")}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              How to trigger this agent. "No schedule" means manual start only.
+              {t("scheduleHelp")}
             </p>
           </div>
 
           {scheduleType === "interval" && (
             <div className="grid gap-1.5">
-              <Label htmlFor="interval">Interval (seconds)</Label>
+              <Label htmlFor="interval">{t("intervalSeconds")}</Label>
               <Input
                 id="interval"
                 type="number"
@@ -327,12 +336,12 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                 }
               />
               <p className="text-xs text-muted-foreground">
-                e.g. 300 = every 5 minutes, 3600 = every hour.
+                {t("intervalHelp")}
               </p>
               {config.start_interval && config.start_interval > 0 && (
                 <div className="rounded-md border bg-muted/30 p-3">
                   <p className="text-xs font-medium text-muted-foreground mb-1.5">
-                    Next runs
+                    {t("nextRuns")}
                   </p>
                   <ul className="space-y-0.5">
                     {[1, 2, 3].map((n) => {
@@ -352,7 +361,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
           {scheduleType === "calendar" && (
             <div className="grid gap-4">
               <div className="grid gap-1.5">
-                <Label>Hour</Label>
+                <Label>{t("hour")}</Label>
                 <Select
                   value={hourMode}
                   onValueChange={(v) => {
@@ -370,9 +379,9 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="specific">Specific hour</SelectItem>
-                    <SelectItem value="every">Every hour</SelectItem>
-                    <SelectItem value="range">Hour range</SelectItem>
+                    <SelectItem value="specific">{t("specificHour")}</SelectItem>
+                    <SelectItem value="every">{t("everyHour")}</SelectItem>
+                    <SelectItem value="range">{t("hourRange")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -407,7 +416,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                         setHourRange({ ...hourRange, from: Number(e.target.value) })
                       }
                     />
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">to</span>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">{t("to")}</span>
                     <Input
                       type="number"
                       min={0}
@@ -420,12 +429,12 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Runs every hour within this range (e.g. 7 to 23 = runs at 7:00, 8:00, ... 23:00).
+                    {t("hourRangeHelp")}
                   </p>
                 </div>
               )}
               <div className="grid gap-1.5">
-                <Label htmlFor="cal-minute">Minute</Label>
+                <Label htmlFor="cal-minute">{t("minute")}</Label>
                 <Input
                   id="cal-minute"
                   type="number"
@@ -443,7 +452,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="cal-weekday">
-                  Weekday <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                  {t("weekday")} <span className="text-xs font-normal text-muted-foreground">({t("optional")})</span>
                 </Label>
                 <Select
                   value={calendarInterval.weekday !== null && calendarInterval.weekday !== undefined ? String(calendarInterval.weekday) : "any"}
@@ -458,7 +467,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="any">Every day</SelectItem>
+                    <SelectItem value="any">{t("everyDay")}</SelectItem>
                     {weekdayLabels.map((label, i) => (
                       <SelectItem key={i} value={String(i)}>
                         {label}
@@ -469,14 +478,14 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="cal-day">
-                  Day of month <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                  {t("dayOfMonth")} <span className="text-xs font-normal text-muted-foreground">({t("optional")})</span>
                 </Label>
                 <Input
                   id="cal-day"
                   type="number"
                   min={1}
                   max={31}
-                  placeholder="Leave empty for every day"
+                  placeholder={t("dayPlaceholder")}
                   value={calendarInterval.day ?? ""}
                   onChange={(e) =>
                     setCalendarInterval({
@@ -487,7 +496,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="wake-system">Wake System</Label>
+                <Label htmlFor="wake-system">{t("wakeSystem")}</Label>
                 <Select
                   value={config.wake_system ? "true" : "false"}
                   onValueChange={(v) =>
@@ -498,12 +507,12 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="true">Yes</SelectItem>
-                    <SelectItem value="false">No</SelectItem>
+                    <SelectItem value="true">{t("yes")}</SelectItem>
+                    <SelectItem value="false">{t("no")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Wake the system from sleep to run this agent at the scheduled time.
+                  {t("wakeSystemHelp")}
                 </p>
               </div>
               <div className="rounded-md border bg-muted/30 p-3">
@@ -515,13 +524,13 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
                     ? expandHourRange(calendarInterval, hourRange.from, hourRange.to)
                     : [calendarInterval]
                   if (intervals.length === 0) {
-                    return <p className="text-xs text-destructive">Invalid hour range</p>
+                    return <p className="text-xs text-destructive">{t("hourRangeInvalid")}</p>
                   }
                   const occurrences = intervals.length > 1
                     ? getNextOccurrencesMulti(intervals, 3)
                     : getNextOccurrences(intervals[0], 3)
                   if (occurrences.length === 0) {
-                    return <p className="text-xs text-muted-foreground">No upcoming runs found</p>
+                    return <p className="text-xs text-muted-foreground">{t("noUpcomingRuns")}</p>
                   }
                   return (
                     <ul className="space-y-0.5">
@@ -539,7 +548,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
 
           <div className="grid gap-1.5">
             <Label htmlFor="working-dir">
-              Working Directory <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+              {t("workingDirectory")} <span className="text-xs font-normal text-muted-foreground">({t("optional")})</span>
             </Label>
             <Input
               id="working-dir"
@@ -552,13 +561,13 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               autoCorrect="off"
             />
             <p className="text-xs text-muted-foreground">
-              Directory to use as the current working directory when running the command.
+              {t("workingDirectoryHelp")}
             </p>
           </div>
 
           <div className="grid gap-1.5">
             <Label htmlFor="stdout">
-              Standard Output Path <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+              {t("standardOutputPath")} <span className="text-xs font-normal text-muted-foreground">({t("optional")})</span>
             </Label>
             <Input
               id="stdout"
@@ -571,13 +580,13 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               autoCorrect="off"
             />
             <p className="text-xs text-muted-foreground">
-              File path to write the command's standard output. Useful for checking execution results.
+              {t("standardOutputPathHelp")}
             </p>
           </div>
 
           <div className="grid gap-1.5">
             <Label htmlFor="stderr">
-              Standard Error Path <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+              {t("standardErrorPath")} <span className="text-xs font-normal text-muted-foreground">({t("optional")})</span>
             </Label>
             <Input
               id="stderr"
@@ -590,7 +599,7 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
               autoCorrect="off"
             />
             <p className="text-xs text-muted-foreground">
-              File path to write the command's error output. Useful for debugging failures.
+              {t("standardErrorPathHelp")}
             </p>
           </div>
 
@@ -599,10 +608,10 @@ export function JobForm({ open, onClose, onSave, editingJob }: JobFormProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("cancel")}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : isEditing ? "Save" : "Create"}
+            {saving ? t("saving") : isEditing ? t("save") : t("create")}
           </Button>
         </DialogFooter>
       </DialogContent>

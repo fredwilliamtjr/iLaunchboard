@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useLogs } from "@/hooks/useLogs"
 import { clearLogFile, openLogInEditor } from "@/lib/invoke"
+import { useSettings } from "@/lib/i18n"
 import { ExternalLink, RefreshCw, Trash2 } from "lucide-react"
 
 type LogViewerProps = {
@@ -20,6 +21,7 @@ function formatTime(date: Date): string {
 }
 
 export function LogViewer({ logPath, tailLines = 200 }: LogViewerProps) {
+  const { t } = useSettings()
   const { content, modifiedAt, loading, error, fetchLog } = useLogs()
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function LogViewer({ logPath, tailLines = 200 }: LogViewerProps) {
   if (!logPath) {
     return (
       <div className="text-sm text-muted-foreground py-4">
-        No log path configured
+        {t("noLogPath")}
       </div>
     )
   }
@@ -57,7 +59,7 @@ export function LogViewer({ logPath, tailLines = 200 }: LogViewerProps) {
             disabled={loading}
           >
             <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            {t("refresh")}
           </Button>
           <Button
             variant="ghost"
@@ -68,7 +70,7 @@ export function LogViewer({ logPath, tailLines = 200 }: LogViewerProps) {
             }}
           >
             <Trash2 className="h-3 w-3 mr-1" />
-            Clear
+            {t("clear")}
           </Button>
           <Button
             variant="ghost"
@@ -76,7 +78,7 @@ export function LogViewer({ logPath, tailLines = 200 }: LogViewerProps) {
             onClick={() => openLogInEditor(logPath)}
           >
             <ExternalLink className="h-3 w-3 mr-1" />
-            Open in Editor
+            {t("openInEditor")}
           </Button>
         </div>
       </div>
@@ -85,7 +87,7 @@ export function LogViewer({ logPath, tailLines = 200 }: LogViewerProps) {
       ) : (
         <ScrollArea className="h-64 rounded-md border bg-muted/30">
           <pre className="p-3 text-xs font-mono whitespace-pre-wrap break-all">
-            {content || "(empty)"}
+            {content || t("empty")}
           </pre>
         </ScrollArea>
       )}

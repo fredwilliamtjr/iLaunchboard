@@ -2,13 +2,14 @@ import { useState } from "react"
 import { Check, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { LaunchdJob } from "@/types"
+import { useSettings } from "@/lib/i18n"
 
 type CommandPanelProps = {
   job: LaunchdJob
 }
 
 type CommandRow = {
-  label: string
+  label: "Start" | "Stop" | "Kickstart" | "Enable" | "Disable" | "Remove"
   command: string
   destructive?: boolean
 }
@@ -48,6 +49,7 @@ export function buildCommands(job: LaunchdJob): CommandRow[] {
 }
 
 export function CommandPanel({ job }: CommandPanelProps) {
+  const { t } = useSettings()
   const [copied, setCopied] = useState<string | null>(null)
   const commands = buildCommands(job)
 
@@ -64,9 +66,26 @@ export function CommandPanel({ job }: CommandPanelProps) {
     }
   }
 
+  const commandLabel = (label: CommandRow["label"]) => {
+    switch (label) {
+      case "Start":
+        return t("start")
+      case "Stop":
+        return t("stop")
+      case "Kickstart":
+        return t("kickstart")
+      case "Enable":
+        return t("enable")
+      case "Disable":
+        return t("disable")
+      case "Remove":
+        return t("remove")
+    }
+  }
+
   return (
     <section className="space-y-2">
-      <h4 className="text-sm font-medium">Commands</h4>
+      <h4 className="text-sm font-medium">{t("commands")}</h4>
       <div className="space-y-2">
         {commands.map((item) => (
           <div
@@ -80,7 +99,7 @@ export function CommandPanel({ job }: CommandPanelProps) {
                   : "text-sm text-muted-foreground"
               }
             >
-              {item.label}
+              {commandLabel(item.label)}
             </span>
             <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted px-3 py-2">
               <code className="min-w-0 flex-1 truncate font-mono text-sm">
@@ -91,7 +110,9 @@ export function CommandPanel({ job }: CommandPanelProps) {
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 shrink-0"
-                aria-label={`Copy ${item.label.toLowerCase()} command`}
+                aria-label={t("copyCommand", {
+                  label: commandLabel(item.label).toLowerCase(),
+                })}
                 onClick={() => void copyCommand(item.command)}
               >
                 {copied === item.command ? (

@@ -55,6 +55,42 @@ describe("useJobs", () => {
     })
   })
 
+  it("filters by status", async () => {
+    const { result } = renderHook(() => useJobs())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    act(() => {
+      result.current.setStatusFilter("Running")
+    })
+
+    await waitFor(() => {
+      expect(result.current.filteredJobs.length).toBeGreaterThan(0)
+      expect(
+        result.current.filteredJobs.every((job) => job.status === "Running")
+      ).toBe(true)
+    })
+  })
+
+  it("filters by PID", async () => {
+    const { result } = renderHook(() => useJobs())
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    act(() => {
+      result.current.setPidFilter("123")
+    })
+
+    await waitFor(() => {
+      expect(result.current.filteredJobs.length).toBe(1)
+      expect(result.current.filteredJobs[0].pid).toBe(1234)
+    })
+  })
+
   it("handles error", async () => {
     setFakeHandler("list_jobs", () => {
       throw new Error("Connection failed")

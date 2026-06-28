@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import type { JobListEntry, JobSource } from "@/types"
+import type { JobListEntry, JobSource, JobStatus } from "@/types"
 import { listJobs } from "@/lib/invoke"
 
 type UseJobsReturn = {
@@ -11,6 +11,10 @@ type UseJobsReturn = {
   setSearch: (value: string) => void
   sourceFilter: JobSource | "All"
   setSourceFilter: (value: JobSource | "All") => void
+  statusFilter: JobStatus | "All"
+  setStatusFilter: (value: JobStatus | "All") => void
+  pidFilter: string
+  setPidFilter: (value: string) => void
   refresh: () => Promise<void>
 }
 
@@ -20,6 +24,8 @@ export function useJobs(): UseJobsReturn {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [sourceFilter, setSourceFilter] = useState<JobSource | "All">("All")
+  const [statusFilter, setStatusFilter] = useState<JobStatus | "All">("All")
+  const [pidFilter, setPidFilter] = useState("")
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -39,11 +45,19 @@ export function useJobs(): UseJobsReturn {
   }, [refresh])
 
   const filteredJobs = jobs.filter((job) => {
+    const normalizedSearch = search.trim().toLowerCase()
+    const normalizedPid = pidFilter.trim()
     const matchesSearch =
-      search === "" || job.label.toLowerCase().includes(search.toLowerCase())
+      normalizedSearch === "" ||
+      job.label.toLowerCase().includes(normalizedSearch)
     const matchesSource =
       sourceFilter === "All" || job.source === sourceFilter
-    return matchesSearch && matchesSource
+    const matchesStatus =
+      statusFilter === "All" || job.status === statusFilter
+    const matchesPid =
+      normalizedPid === "" ||
+      (job.pid !== null && String(job.pid).includes(normalizedPid))
+    return matchesSearch && matchesSource && matchesStatus && matchesPid
   })
 
   return {
@@ -55,6 +69,10 @@ export function useJobs(): UseJobsReturn {
     setSearch,
     sourceFilter,
     setSourceFilter,
+    statusFilter,
+    setStatusFilter,
+    pidFilter,
+    setPidFilter,
     refresh,
   }
 }

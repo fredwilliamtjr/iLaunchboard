@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CommandPanel } from "@/components/CommandPanel"
 import { LogViewer } from "@/components/LogViewer"
 import type { LaunchdJob } from "@/types"
+import { useSettings } from "@/lib/i18n"
 import { getJobDetail, revealInFinder } from "@/lib/invoke"
 import { FolderOpen } from "lucide-react"
 import { formatCalendarIntervals } from "@/lib/calendar-utils"
@@ -34,6 +35,7 @@ function DetailRow({ label, value }: { label: string; value: string | null | und
 }
 
 export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) {
+  const { t, statusLabel } = useSettings()
   const [job, setJob] = useState<LaunchdJob | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -51,12 +53,12 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
       <SheetContent className="w-[600px] sm:w-[640px] sm:max-w-[640px] overflow-y-auto p-0">
         <SheetHeader>
           <SheetTitle className="text-base font-semibold">
-            {job?.label ?? "Loading..."}
+            {job?.label ?? t("loading")}
           </SheetTitle>
         </SheetHeader>
 
         {loading && (
-          <div className="px-4 py-8 text-center text-muted-foreground">Loading...</div>
+          <div className="px-4 py-8 text-center text-muted-foreground">{t("loading")}</div>
         )}
 
         {job && !loading && (
@@ -69,19 +71,19 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                   job.status === "Loaded" ? "bg-blue-500" : ""
                 }
               >
-                {job.status}
+                {statusLabel(job.status)}
               </Badge>
               {job.pid && (
                 <span className="text-xs text-muted-foreground">PID: {job.pid}</span>
               )}
               {job.last_exit_code !== null && job.last_exit_code !== undefined && (
                 <span className="text-xs text-muted-foreground">
-                  Exit: {job.last_exit_code}
+                  {t("exit")}: {job.last_exit_code}
                 </span>
               )}
               {job.last_run_at && (
                 <span className="text-xs text-muted-foreground">
-                  Last run: {new Date(Number(job.last_run_at)).toLocaleString()}
+                  {t("lastRunLabel")}: {new Date(Number(job.last_run_at)).toLocaleString()}
                 </span>
               )}
             </div>
@@ -89,7 +91,7 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
             <div className="flex gap-2">
               {job.source === "UserAgent" && (
                 <Button size="sm" variant="outline" onClick={() => onEdit(job)}>
-                  Edit
+                  {t("edit")}
                 </Button>
               )}
               <Button
@@ -98,7 +100,7 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                 onClick={() => revealInFinder(job.plist_path)}
               >
                 <FolderOpen className="h-3 w-3 mr-1" />
-                Reveal
+                {t("reveal")}
               </Button>
             </div>
 
@@ -106,18 +108,18 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
 
             <Tabs defaultValue="config">
               <TabsList>
-                <TabsTrigger value="config">Configuration</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
-                <TabsTrigger value="commands">Commands</TabsTrigger>
+                <TabsTrigger value="config">{t("configuration")}</TabsTrigger>
+                <TabsTrigger value="logs">{t("logs")}</TabsTrigger>
+                <TabsTrigger value="commands">{t("commands")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="config" className="space-y-1">
                 <dl>
-                  <DetailRow label="Label" value={job.plist.label} />
-                  <DetailRow label="Program" value={job.plist.program} />
+                  <DetailRow label={t("label")} value={job.plist.label} />
+                  <DetailRow label={t("program")} value={job.plist.program} />
                   {job.plist.program_arguments && job.plist.program_arguments.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 py-1.5">
-                      <dt className="text-sm text-muted-foreground">Arguments</dt>
+                      <dt className="text-sm text-muted-foreground">{t("arguments")}</dt>
                       <dd className="col-span-2 space-y-0.5">
                         {job.plist.program_arguments.map((arg, i) => (
                           <div key={i} className="text-sm font-mono break-all">
@@ -129,13 +131,13 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                     </div>
                   )}
                   {job.plist.run_at_load && (
-                    <DetailRow label="Run at Load" value="true" />
+                    <DetailRow label={t("runAtLoad")} value="true" />
                   )}
                   {job.plist.keep_alive && (
-                    <DetailRow label="Keep Alive" value="true" />
+                    <DetailRow label={t("keepAlive")} value="true" />
                   )}
                   <DetailRow
-                    label="Interval"
+                    label={t("interval")}
                     value={
                       job.plist.start_interval
                         ? `${job.plist.start_interval}s`
@@ -143,16 +145,16 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                     }
                   />
                   <DetailRow
-                    label="Working Dir"
+                    label={t("workingDir")}
                     value={job.plist.working_directory}
                   />
-                  <DetailRow label="Stdout" value={job.plist.standard_out_path} />
-                  <DetailRow label="Stderr" value={job.plist.standard_error_path} />
+                  <DetailRow label={t("stdout")} value={job.plist.standard_out_path} />
+                  <DetailRow label={t("stderr")} value={job.plist.standard_error_path} />
                   {job.plist.wake_system && (
-                    <DetailRow label="Wake System" value="true" />
+                    <DetailRow label={t("wakeSystem")} value="true" />
                   )}
                   {job.plist.disabled && (
-                    <DetailRow label="Disabled" value="true" />
+                    <DetailRow label={t("disabled")} value="true" />
                   )}
                 </dl>
                 {job.plist.environment_variables &&
@@ -160,7 +162,7 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                     <>
                       <Separator />
                       <h4 className="text-sm font-medium pt-2">
-                        Environment Variables
+                        {t("environmentVariables")}
                       </h4>
                       <dl>
                         {Object.entries(job.plist.environment_variables).map(
@@ -175,7 +177,7 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                   job.plist.start_calendar_interval.length > 0 && (
                     <>
                       <Separator />
-                      <h4 className="text-sm font-medium pt-2">Schedule</h4>
+                      <h4 className="text-sm font-medium pt-2">{t("schedule")}</h4>
                       <div className="text-sm py-0.5">
                         {formatCalendarIntervals(job.plist.start_calendar_interval)}
                       </div>
@@ -187,20 +189,20 @@ export function JobDetail({ plistPath, open, onClose, onEdit }: JobDetailProps) 
                 <div className="space-y-4">
                   {job.plist.standard_out_path && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Standard Output</h4>
+                      <h4 className="text-sm font-medium mb-2">{t("standardOutput")}</h4>
                       <LogViewer logPath={job.plist.standard_out_path} />
                     </div>
                   )}
                   {job.plist.standard_error_path && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Standard Error</h4>
+                      <h4 className="text-sm font-medium mb-2">{t("standardError")}</h4>
                       <LogViewer logPath={job.plist.standard_error_path} />
                     </div>
                   )}
                   {!job.plist.standard_out_path &&
                     !job.plist.standard_error_path && (
                       <div className="text-sm text-muted-foreground py-4">
-                        No log paths configured for this agent
+                        {t("noLogPaths")}
                       </div>
                   )}
                 </div>
